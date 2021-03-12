@@ -67,14 +67,20 @@
                         collect (apply function client primary :link link args)))))
         (T
          (loop for client in (clients multiposter)
-               collect (apply function client primary args)))))
+               collect (with-simple-restart (continue "Abandon posting to ~a, ~
+regardless of whether or not posting succeeded"
+                                                      client)
+                         (apply function client primary args))))))
 
 (defmethod post-text ((multiposter multiposter) text &rest args)
   (delegate-to multiposter #'post-text text args))
 
 (defmethod post-link ((multiposter multiposter) url &rest args)
   (loop for client in (clients multiposter)
-        collect (apply #'post-link client url args)))
+        collect (with-simple-restart (continue "Abandon posting to ~a, ~
+regardless of whether or not posting succeeded"
+                                               client)
+                  (apply #'post-link client url args))))
 
 (defmethod post-image ((multiposter multiposter) path &rest args)
   (delegate-to multiposter #'post-image (pathname path) args))
