@@ -47,5 +47,4 @@
                :humbler
                :clohost
                :fuzzy-dates
-               :local-time
                :drakma))

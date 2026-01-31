@@ -143,6 +143,13 @@
                  &key suppress-notifications &allow-other-keys)
   (post-without-file client (compose-post post) () suppress-notifications))
 
+(defun as-timestring (universal-time)
+  (multiple-value-bind (s min h d mon y d-o-w dstp tz) (decode-universal-time universal-time)
+    (declare (ignore d-o-w dstp))
+    (format nil
+            "~4,'0d-~2,'0d-~2,'0dT~2,'0d:~2,'0d:~2,'0d~:[+~;-~]~2,'0d:~2,'0d"
+            y mon d h min s (plusp tz) (floor (abs tz))
+            (floor (mod (* (- tz) 60) 60)))))
 
 (defmethod post ((post image-post) (client discord)
                  &rest rest
@@ -167,10 +174,7 @@
                        discord-link
                        (colour client)
                        (tags post)
-                       (local-time:format-timestring
-                        nil
-                        time
-                        :timezone local-time:+utc-zone+)
+                       (as-timestring (get-universal-time))
                        (format nil "attachment://~a.~a"
                                (pathname-name first-file)
                                (pathname-type first-file)))
